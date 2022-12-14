@@ -1,0 +1,11 @@
+{
+  "sra_cryptic": {
+    "chtc": {
+      "docker_image": "dockerreg.##domain##.edu/##username##/sam_refine:v1_0",
+      "ram": "16GB",
+      "cpus": "2",
+      "machine_requirements": "Target.HasCHTCStaging == true",
+      "disk_space": "200GB"
+    }
+  }
+}

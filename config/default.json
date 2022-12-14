@@ -1,0 +1,89 @@
+{
+  "all": {
+    "local": {
+      "submit_paths": {
+        "home_dir": "##/Users/username##",
+        "pipeline_code_dir": "##/Users/username/github/##sra_cryptic_lineages"
+      },
+      "in_paths": {
+        "home_dir": "##/Volumes/T7##"
+      },
+      "out_paths": {
+        "home_dir": "##/Volumes/T7##"
+      }
+    },
+    "chtc": {
+      "submit_paths": {
+        "un": "##username##",
+        "server": "##submit.##domain##.edu##",
+        "home_dir": "##/home/username##"
+      },
+      "in_paths": {
+        "un": "##username##",
+        "server": "transfer.##domain##.edu",
+        "home_dir": "##/staging/groups/user_group##"
+      }
+    }
+  },
+  "stage_sra": {
+    "local": {
+      "mark_as_completed": "False",
+      "input_completed_trigger": "<stage_sra:completed>",
+      "executable": "stage_sra_loop.py",
+      "arguments": {
+        "--chtc_completed": "<sra_cryptic:chtc:submit_paths:completed_json_path>",
+        "--submit_username": "<sra_cryptic:chtc:submit_paths:un>",
+        "--submit_server": "<sra_cryptic:chtc:submit_paths:server>",
+        "--outpath_username": "<sra_cryptic:chtc:in_paths:un>",
+        "--outpath_server": "<sra_cryptic:chtc:in_paths:server>",
+        "--completed_files": "##/Volumes/T7/sra_cryptic_loop/sra_query/Done_SRAs.csv.gz##",
+        "--all_files": "##/Volumes/T7/sra_cryptic_loop/sra_query/SRA_meta.tsv##",
+        "--local_dir": "##/Volumes/T7/sra_cryptic_loop/sra_query##",
+        "--chtc_module_out_dir": "<sra_cryptic:chtc:out_paths:module_out_dir>",
+        "--local_module_out_dir": "<sra_cryptic:local:out_paths:module_out_dir>",
+        "--chtc_sample_dir": "<sra_cryptic:chtc:in_paths:module_in_dir>",
+        "--local_sample_dir": "<sra_cryptic:local:in_paths:module_in_dir>",
+        "--ssh_connection_dir": "##/Users/username##/.ssh",
+        "--node_limit": "25",
+        "--files_per_node": "30"
+      }
+    }
+  },
+  "sra_cryptic": {
+    "local": {
+      "input_completed_trigger": "<stage_sra:completed>",
+      "mark_as_completed": "False"
+    },
+    "chtc": {
+      "input_completed_trigger": "<stage_sra:completed>",
+      "submit_job": "True",
+      "get_output": "False",
+      "executable": "sra_cryptic_loop.sh",
+      "sample_extension": [
+        ".txt"
+      ],
+      "static_files": {
+        "SAM_Refiner_py": "##/Users/username/github##/sra_cryptic_lineages/static_files/SAM_Refiner.py",
+        "SARS2_fasta": "##/Users/username/github##/sra_cryptic_lineages/static_files/SARS2.fasta",
+        "SARS2_gb": "##/Users/username/github##/sra_cryptic_lineages/static_files/SARS2.gb",
+        "SRA_fetch_py": "##/Users/username/github##/sra_cryptic_lineages/static_files/SRA_fetch.py",
+        "Variant_extractor_py": "##/Users/username/github##/sra_cryptic_lineages/static_files/Variant_extractor.py",
+        "derep_py": "##/Users/username/github##/sra_cryptic_lineages/static_files/derep.py"
+      },
+      "arguments": {
+        "-s": "${s}"
+      }
+    }
+  },
+  "extract_results": {
+    "local": {
+      "mark_as_completed": "False",
+      "input_completed_trigger": "<stage_sra:completed>",
+      "executable": "extract_results_aggregate.py",
+      "arguments": {
+        "--input_dir": "<sra_cryptic:local:out_paths:module_out_dir>",
+        "--untar_dir": "<extract_results:local:out_paths:module_out_dir>"
+      }
+    }
+  }
+}
