@@ -50,12 +50,16 @@ args = get_process_arrays_args()
 untar_dir = args.untar_dir
 multivariant_py_path = args.multivariant_py_path
 untar_list = os.listdir(untar_dir)
+# untar_list = [x for x in untar_list if x in ['1']]
 untar_list = [os.path.join(untar_dir, x) for x in untar_list if isint(x)]
 
 extract_variants_cmd = 'python3 {0}'.format(multivariant_py_path)
+
 for untar_dir_path in untar_list:
+    print(untar_dir_path)
     sample_count_out = subprocess_run([extract_variants_cmd],
                                       shell=True,
                                       stdout=PIPE,
                                       stderr=PIPE,
                                       cwd=untar_dir_path)
+

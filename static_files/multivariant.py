@@ -10,13 +10,16 @@ multi_var = ["notN440", "Y449H", "Y449R", "Y453F", "L455W", "F456L", "notS477",
              "notT478", "T478R", "V483A", "E484E", "E484P", "E484Q", "E484K", "E484V",
              "F486P", "F486A", "F486S", "F490H", "F490Y", "Q493K", "S494P", "Q498K", "Q498H",
              "Q498Y", "notQ498", "S499S", "P499H", "N501S", "N501T", "notN501", "notY505"]
+
+
+# multi_var = ["L452R", "T478K","notS477N"]
 extras = ["443DEL", "444DEL", "445DEL", "446DEL", "447DEL", "448DEL", "449DEL", "482DEL", "483DEL", "484DEL"]
 
 spike_offset = 21562
 start = (((440 -1) * 3) +1) + spike_offset
 end = (((505 -1) * 3) +1) + spike_offset
 SRR_list = []
-# with open("SraRunTable.csv", "r") as meta_fh:
+# with open("SraRunTale.csv", "r") as meta_fh:
 # for line in meta_fh:
 # if not line.startswith("Run"):
 # splitline = line.split(",")
@@ -68,7 +71,7 @@ with open(samps+"_multi_var.tsv","w") as multivar_fhs:
                                             for PM in multi_var:
                                                 if 'not' in PM:
                                                     if not PM.strip('not') in pms:
-                                                        POS = (((int(PM[4:]) -1) * 3) +1) + spike_offset
+                                                        POS = (((int(PM[4:]) - 1) * 3) + 1) + spike_offset
                                                         if POS > pm_start and POS < pm_end:
                                                             match += 1
                                                 else:

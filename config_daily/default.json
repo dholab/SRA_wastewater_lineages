@@ -2,8 +2,8 @@
   "all": {
     "local": {
       "submit_paths": {
-        "home_dir": "~/",
-        "pipeline_code_dir": "~/github/sra_cryptic_lineages"
+        "home_dir": "/Users/dabaker3",
+        "pipeline_code_dir": "/Users/dabaker3/github/sra_cryptic_lineages_v1"
       },
       "in_paths": {
         "home_dir": "/Volumes/T6"
@@ -14,14 +14,14 @@
     },
     "chtc": {
       "submit_paths": {
-        "un": "##username##",
-        "server": "submit.##domain##.edu",
-        "home_dir": "/home/##username##"
+        "un": "dabaker3",
+        "server": "oconnorsubmit.chtc.wisc.edu",
+        "home_dir": "/home/dabaker3"
       },
       "in_paths": {
-        "un": "##username##",
-        "server": "transfer.##domain##.edu",
-        "home_dir": "/staging/groups/##group##"
+        "un": "dabaker3",
+        "server": "transfer.chtc.wisc.edu",
+        "home_dir": "/staging/groups/oconnor_group"
       }
     }
   },
@@ -41,7 +41,7 @@
         "--chtc_sample_dir": "<sra_cryptic:chtc:in_paths:module_in_dir>",
         "--local_sample_dir": "<sra_cryptic:local:in_paths:module_in_dir>",
         "--local_stage_sra_dir":  "<stage_sra:local:in_paths:module_in_dir>",
-        "--ssh_connection_dir": "~/.ssh",
+        "--ssh_connection_dir": "/Users/dabaker3/.ssh",
         "--node_limit": "30",
         "--files_per_node": "30",
         "--sra_tracking_dir": "/Volumes/T6/sra_tracking",
@@ -65,12 +65,12 @@
         ".txt"
       ],
       "static_files": {
-        "SAM_Refiner_py": "~/github/sra_cryptic_lineages/static_files/SAM_Refiner.py",
-        "SARS2_fasta": "~/github/sra_cryptic_lineages/static_files/SARS2.fasta",
-        "SARS2_gb": "~/github/sra_cryptic_lineages/static_files/SARS2.gb",
-        "SRA_fetch_py": "~/github/sra_cryptic_lineages/static_files/SRA_fetch.py",
-        "Variant_extractor_py": "~/github/sra_cryptic_lineages/static_files/Variant_extractor.py",
-        "derep_py": "~/github/sra_cryptic_lineages/static_files/derep.py"
+        "SAM_Refiner_py": "/Users/dabaker3/github/sra_cryptic_lineages/static_files/SAM_Refiner.py",
+        "SARS2_fasta": "/Users/dabaker3/github/sra_cryptic_lineages/static_files/SARS2.fasta",
+        "SARS2_gb": "/Users/dabaker3/github/sra_cryptic_lineages/static_files/SARS2.gb",
+        "SRA_fetch_py": "/Users/dabaker3/github/sra_cryptic_lineages/static_files/SRA_fetch.py",
+        "Variant_extractor_py": "/Users/dabaker3/github/sra_cryptic_lineages/static_files/Variant_extractor.py",
+        "derep_py": "/Users/dabaker3/github/sra_cryptic_lineages/static_files/derep.py"
       },
       "arguments": {
         "-s": "${s}"
@@ -97,8 +97,23 @@
       "arguments": {
         "--submit_dir": "<sra_cryptic:local:out_paths:submit_dir>",
         "--submit_name": "<submit_name>",
-        "--gdrive_path": "/Users/##username##/Library/CloudStorage/GoogleDrive-##email##/My Drive/SRA_Cryptic_E484_del",
+        "--gdrive_path": "\"/Users/dabaker3/Library/CloudStorage/GoogleDrive-dabaker3@wisc.edu/My Drive/SRA_Cryptic_E484_del\"",
         "--aggregated_dir": "/Volumes/T6/aggregated_sra"
+      }
+    }
+  },
+  "agg_unique_seqs": {
+    "local": {
+      "mark_as_completed": "False",
+      "start_trigger": "<aggregate_results:completed>",
+      "input_completed_trigger": "<aggregate_results:completed>",
+      "executable": "agg_unique_seqs.py",
+      "arguments": {
+        "--submit_dir": "<sra_cryptic:local:out_paths:submit_dir>",
+        "--submit_name": "<submit_name>",
+        "--gdrive_path": "\"/Users/dabaker3/Library/CloudStorage/GoogleDrive-dabaker3@wisc.edu/My Drive/SRA_Cryptic_E484_del\"",
+        "--analysis_dir": "/Volumes/T6/serpent/sra_cryptic_analysis",
+        "--agg_dir": "/Volumes/T9"
       }
     }
   }

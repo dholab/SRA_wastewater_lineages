@@ -1,0 +1,12 @@
+{
+  "sra_cryptic": {
+    "chtc": {
+      "docker_image": "dockerreg.chtc.wisc.edu/dabaker3/sam_refine:v0_2_2",
+      "ram": "16GB",
+      "cpus": "2",
+      "machine_requirements": "(Target.HasCHTCStaging == true)  && ((OpSysMajorVer == 8) || (OpSysMajorVer == 9)) && (Machine =!= \"oconnorgpu2000\")",
+      "priority_flag": "accounting_group = Pathology_OConnor",
+      "disk_space": "200GB"
+    }
+  }
+}

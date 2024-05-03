@@ -1,7 +1,6 @@
-/config_batch/
-/build_docker.sh
-/minimap2-2.17.tar.bz2
-/samtools-1.9.tar.bz2
-/BBMap_39.01.tar.gz
+/docker/build_docker.sh
+/docker/minimap2-2.17.tar.bz2
+/docker/samtools-1.9.tar.bz2
+/docker/BBMap_39.01.tar.gz
 .DS_Store
 /modules/extract_484.py

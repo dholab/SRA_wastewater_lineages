@@ -6,7 +6,7 @@ import os
 import json
 from subprocess import PIPE, run as subprocess_run
 import pandas as pd
-
+from pathlib import Path
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -45,18 +45,6 @@ def parse_process_arrays_args(parser: ArgumentParser):
                         type=str,
                         help='where_chtc_submits',
                         required=True)
-    parser.add_argument('--completed_files',
-                        type=str,
-                        help='File of completed_sra',
-                        required=True)
-    parser.add_argument('--all_files',
-                        type=str,
-                        help='file_of_all_SRA',
-                        required=True)
-    parser.add_argument('--local_dir',
-                        type=str,
-                        help='local dir',
-                        required=True)
     parser.add_argument('--chtc_module_out_dir',
                         type=str,
                         help='chtc_module_out_dir dir',
@@ -73,6 +61,11 @@ def parse_process_arrays_args(parser: ArgumentParser):
                         type=str,
                         help='local_sample_dir dir',
                         required=True)
+    parser.add_argument('--local_stage_sra_dir',
+                        type=str,
+                        help='local_stage_sra_dir dir',
+                        required=True
+                        )
     parser.add_argument('--node_limit',
                         type=int,
                         help='Node limit for simultaneous launch',
@@ -88,6 +81,24 @@ def parse_process_arrays_args(parser: ArgumentParser):
                         help='Node limit for simultaneous launch',
                         default=5,
                         required=False)
+    parser.add_argument('--ready_path',
+                        type=str,
+                        help='ready_path',
+                        required=True)
+    parser.add_argument('--completed_path',
+                        type=str,
+                        help='completed_path',
+                        required=True)
+    parser.add_argument('--status_dir',
+                        type=str,
+                        help='status_dir',
+                        required=True)
+    parser.add_argument('--sra_tracking_dir',
+                        type=str,
+                        help='status_dir',
+                        required=True)
+
+
 
 
 def get_process_arrays_args():
@@ -103,13 +114,13 @@ def get_process_arrays_args():
 
 args = get_process_arrays_args()
 chtc_completed = args.chtc_completed
-completed_files = args.completed_files
-all_files = args.all_files
+local_stage_sra_dir = args.local_stage_sra_dir
+all_files = os.path.join(local_stage_sra_dir, 'SRA_meta_run.tsv')
+sra_tracking_dir = args.sra_tracking_dir
 submit_username = args.submit_username
 submit_server = args.submit_server
 outpath_username = args.outpath_username
 outpath_server = args.outpath_server
-local_dir = args.local_dir
 chtc_module_out_dir = args.chtc_module_out_dir
 local_module_out_dir = args.local_module_out_dir
 chtc_sample_dir = args.chtc_sample_dir
@@ -118,16 +129,16 @@ files_per_node = args.files_per_node
 local_sample_dir = args.local_sample_dir
 ssh_connection_dir = args.ssh_connection_dir
 size_limit_gb = args.size_limit_gb
+ready_path = args.ready_path
+completed_path = args.completed_path
+status_dir = args.status_dir
 
-df_completed = pd.read_csv(completed_files)
 df_all = pd.read_csv(all_files, sep='\t', header=None)
 df_all = df_all[~df_all[0].isnull()]
 df_all = df_all[~df_all[6].isnull()]
 df_all[6] = pd.to_numeric(df_all[6])
 df_all = df_all[df_all[6] > 1]
-all_run_list = set(df_all[0].unique())
-all_completed_list = set(df_completed['Run'].unique())
-remaining_list = list(all_run_list - all_completed_list)
+remaining_list = set(df_all[0].unique())
 print(len(remaining_list))
 # print(remaining_list)
 if len(remaining_list) < 1:
@@ -137,10 +148,10 @@ os.system('rsync -e \'ssh -o ControlPath="{0}/%L-%r@%h:%p"\' -aP {1}@{2}:{3} {4}
                                                                                          submit_username,
                                                                                          submit_server,
                                                                                          chtc_completed,
-                                                                                         local_dir))
+                                                                                         local_stage_sra_dir))
 
 chtc_submit_filename = os.path.basename(chtc_completed)
-submit_local_path = os.path.join(local_dir, chtc_submit_filename)
+submit_local_path = os.path.join(local_stage_sra_dir, chtc_submit_filename)
 
 if not os.path.exists(submit_local_path):
     print("Warning: condor_q_held.json Does not exist")
@@ -155,17 +166,27 @@ else:
 
 full_sample_list = []
 downloaded_list = []
+full_downloaded_list = []
 sample_list = []
 downloaded_group_list = []
 full_indv_sample_list = []
-
-if os.path.exists(os.path.join(local_dir, 'downloaded_group_list.txt')):
-    with open(os.path.join(local_dir, 'downloaded_group_list.txt'), 'r') as f:
+full_downloaded_filepath = os.path.join(sra_tracking_dir, 'downloaded_list.txt')
+local_downloaded_filepath = os.path.join(local_stage_sra_dir, 'downloaded_list.txt')
+local_downloaded_group_filepath = os.path.join(local_stage_sra_dir, 'downloaded_group_list.txt')
+if os.path.exists(local_downloaded_group_filepath):
+    with open(local_downloaded_group_filepath, 'r') as f:
         for line in f:
             line = line.strip()
             downloaded_group_list.append(line)
-if os.path.exists(os.path.join(local_dir, 'downloaded_list.txt')):
-    with open(os.path.join(local_dir, 'downloaded_list.txt'), 'r') as f:
+
+if os.path.exists(full_downloaded_filepath):
+    with open(full_downloaded_filepath, 'r') as f:
+        for line in f:
+            line = line.strip()
+            full_downloaded_list.append(line)
+
+if os.path.exists(local_downloaded_filepath):
+    with open(local_downloaded_filepath, 'r') as f:
         for line in f:
             line = line.strip()
             downloaded_list.append(line)
@@ -192,14 +213,20 @@ if len(chtc_json) > 0:
                                                                                                      local_module_out_dir))
             if os.path.exists(os.path.join(local_module_out_dir, os.path.basename(path_i))):
                 downloaded_group_list.append(ready_i)
-                with open(os.path.join(local_dir, 'downloaded_group_list.txt'), 'a') as f:
+                with open(local_downloaded_group_filepath, 'a') as f:
                     f.write('{0}\n'.format(ready_i))
                 with open(os.path.join(local_sample_dir, ready_i), 'r') as f:
-                    with open(os.path.join(local_dir, 'downloaded_list.txt'), 'a') as fw:
+                    with open(local_downloaded_filepath, 'a') as fw:
                         for line in f:
                             line = line.strip()
                             fw.write('{0}\n'.format(line))
                             downloaded_list.append(line)
+                with open(os.path.join(local_sample_dir, ready_i), 'r') as f:
+                    with open(full_downloaded_filepath, 'a') as fw:
+                        for line in f:
+                            line = line.strip()
+                            fw.write('{0}\n'.format(line))
+
                 os.system(
                     'ssh -o ControlPath="{0}/%L-%r@%h:%p" {1}@{2} "rm -f {3}"'.format(ssh_connection_dir,
                                                                                       outpath_username,
@@ -263,14 +290,14 @@ for sample_i in pending_sample_group_list:
         for line in f:
             line = line.strip()
             pending_sample_list.append(line)
-
+print(len(pending_sample_list))
 remaining_post_download_pending = list(set(remaining_post_download) - set(pending_sample_list))
 remaining_post_download_pending.sort(reverse=True)
 df_all_remain = df_all[df_all[0].isin(remaining_post_download_pending)]
 df_all_remain.sort_values(by=[6], ascending=True, inplace=True)
 remaining_post_download_pending = list(df_all_remain[0])
 # df_all_remain.to_csv('/Volumes/T8/remainin_sra.csv', index=False)
-print(len(remaining_post_download_pending))
+print(len(set(remaining_post_download)), len(set(pending_sample_list)))
 print('--- New Node Count ---', node_limit - node_count)
 
 
@@ -287,6 +314,7 @@ def calc_files_per_node(df_rem, fpn_limit, size_limit_in_gb=5):
             break
     return fpn_count
 
+print(node_limit, node_count, len(remaining_post_download_pending) )
 
 if (node_count < node_limit) and (len(remaining_post_download_pending) > 0):
     new_node_count = node_limit - node_count
@@ -303,3 +331,9 @@ if (node_count < node_limit) and (len(remaining_post_download_pending) > 0):
                                                                                                  outpath_username,
                                                                                                  outpath_server,
                                                                                                  chtc_sample_dir))
+
+
+if len(remaining_post_download) < 1:
+    print('touching completed')
+    Path(completed_path).touch()
+    Path(ready_path).touch()

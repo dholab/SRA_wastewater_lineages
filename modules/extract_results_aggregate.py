@@ -61,8 +61,12 @@ out_tar_list = []
 
 finished_tar_list = []
 if os.path.exists(finished_tars_path):
-    df = pd.read_csv(finished_tars_path, header=None)
-    finished_tar_list = list(df[0])
+    try:
+        df = pd.read_csv(finished_tars_path, header=None)
+        finished_tar_list = list(df[0])
+    except:
+        finished_tar_list = []
+
 os.makedirs(untar_dir, exist_ok=True)
 
 def get_file_counts(untar_dir):
@@ -105,7 +109,6 @@ with open(finished_tars_path, 'a') as f:
                                           shell=True,
                                           stdout=PIPE,
                                           stderr=PIPE)
-
         check_submit_script_err = sample_count_out.stderr.decode('utf-8').strip()
         check_submit_script_out = sample_count_out.stdout.decode('utf-8').strip()
         result_list = check_submit_script_out.split('\n')
