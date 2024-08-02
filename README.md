@@ -1,13 +1,12 @@
 # SRA Wastewater Lineage Finder Refactor
 
-## Refactor Roadmap
-
-### Feature roadmap:
+### Refactor Roadmap
 
 - [x] SRA accession fetching
 - [x] SRA accession dereplicating and mapping
 - [ ] Introduce more sophisticated data structures like dataclasses to reduce file I/O overall.
-- [ ] Command line interface
+- [ ] Replace print-based logging with proper `loguru`-based standard-error logging
+- [ ] Pure Python command line interface with type-checking and a PyPI-compatible executable entrypoint
 - [ ] SAM refiner/haplotyping identification library/libraries
 - [ ] Variant extractor library/libraries
 - [ ] DuckDB database setup
