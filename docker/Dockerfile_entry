@@ -1,8 +1,0 @@
-FROM sam_refine_noentry:v0
-
-# Tini is now available at /sbin/tini
-RUN chmod -R 777 /root
-RUN chmod -R 777 "${HOME}"
-RUN chmod -R 777 /root/.ncbi
-RUN chmod +x /root/.ncbi/user-settings.mkfg
-ENTRYPOINT ["/bin/sh"]
