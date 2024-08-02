@@ -7,6 +7,7 @@
 - [ ] Introduce more sophisticated data structures like dataclasses to reduce file I/O overall.
 - [ ] Replace print-based logging with proper `loguru`-based standard-error logging
 - [ ] Pure Python command line interface with type-checking and a PyPI-compatible executable entrypoint
+- [ ] Replace `os.system()` calls with `subprocess` calls or pure-python solutions.
 - [ ] SAM refiner/haplotyping identification library/libraries
 - [ ] Variant extractor library/libraries
 - [ ] DuckDB database setup
