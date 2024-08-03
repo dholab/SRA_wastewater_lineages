@@ -1,7 +1,14 @@
-from typing import ArgumentTypeError
+"""
+TODO
+"""
+
+from argparse import ArgumentTypeError
 
 
 def str2bool(v):
+    """
+    TODO
+    """
     if isinstance(v, bool):
         return v
     if v.lower() in ("yes", "true", "t", "y", "1"):

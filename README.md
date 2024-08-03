@@ -5,13 +5,15 @@
 - [x] SRA accession fetching
 - [x] SRA accession dereplicating and mapping
 - [ ] Introduce more sophisticated data structures like dataclasses to reduce file I/O overall.
+- [ ] Strict compliance with [Ruff](https://docs.astral.sh/ruff/rules/) lints and formatting
 - [ ] Replace print-based logging with proper `loguru`-based standard-error logging
-- [ ] Pure Python command line interface with type-checking and a PyPI-compatible executable entrypoint
+- [ ] Pure Python command line interface with type-checking, sensible defaults, and a PyPI-compatible executable entrypoint
 - [ ] Replace `os.system()` calls with `subprocess` calls or pure-python solutions.
+- [ ] Use `pathlib` `Path` instances for all file path handling
 - [ ] SAM refiner/haplotyping identification library/libraries
 - [ ] Variant extractor library/libraries
 - [ ] DuckDB database setup
-- [ ] Potential distributed backend via Dask
+- [ ] Potential distributed backend via Dask and/or the Globus Flows Python SDK
 - [ ] Project and environment management with Poetry or similar PyPI-compatible system
 - [ ] Docker rebuild and push to Docker Hub
 
