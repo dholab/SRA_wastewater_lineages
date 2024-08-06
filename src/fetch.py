@@ -25,14 +25,14 @@ class FetchBundle:
     bbmerge_path: str = "java -ea -Xmx8000m -Xms8000m bbmerge.sh"
     bbmap_path: str = "java -ea -Xmx8000m -Xms8000m bbmap.sh"
     ref: str = "SARS2.fasta"
-    files: list[str] = field(init=False)
+    files: list[Path] = field(init=False)
 
     def __post_init__(self) -> Self:
         self.files = fetch_sra_accession(self)
         return self
 
 
-def fetch_sra_accession(fetch_bundle: FetchBundle) -> list[str]:
+def fetch_sra_accession(fetch_bundle: FetchBundle) -> list[Path]:
     """
     TODO
     """
@@ -143,12 +143,7 @@ def align_derep_reads(input_fasta: str, fetch_bundle: FetchBundle) -> None:
     # run final mapping to the reference in preparation for haplotype calling
     logger.info(f"Mapping uncompressed file for {fetch_bundle.sra_acc}.")
     os.system(
-        f"""
-        minimap2 -a {fetch_bundle.ref} \
-        {input_fasta} \
-        --sam-hit-only --secondary=no \
-        -o {fetch_bundle.sra_acc}.wg.sam
-        """,
+        f"minimap2 -a {fetch_bundle.ref} {input_fasta} --sam-hit-only --secondary=no -o {fetch_bundle.sra_acc}.wg.sam",  # noqa: E501
     )
 
     # Remove the input FASTA
