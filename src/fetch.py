@@ -4,7 +4,7 @@ TODO
 
 from __future__ import annotations
 
-import os
+import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -41,8 +41,8 @@ def fetch_sra_accession(fetch_bundle: FetchBundle) -> list[Path]:
     )
 
     # run SRA prefetch
-    os.system(f"prefetch {fetch_bundle.sra_acc}")
-    os.system(f"fasterq-dump {fetch_bundle.sra_acc} --split-3")
+    subprocess.run(["prefetch", fetch_bundle.sra_acc], check=True)
+    subprocess.run(["fasterq-dump", fetch_bundle.sra_acc, "--split-3"], check=True)
     time.sleep(5)
 
     return Path.cwd().glob("*.fastq")
@@ -73,41 +73,51 @@ def handle_available_fastqs(fetch_bundle: FetchBundle) -> None:
 
         # merge any overlapping reads, putting unmerged forward and reverse reads into
         # their own FASTQs
-        os.system(
-            f"{fetch_bundle.bbmerge_path} \
-            qtrim=t \
-            in1={fetch_bundle.sra_acc}_1.fastq in2={fetch_bundle.sra_acc}_2.fastq \
-            out={fetch_bundle.sra_acc}.merge.fastq.gz \
-            outu1={fetch_bundle.sra_acc}.unmerged_r1.fastq.gz \
-            outu2={fetch_bundle.sra_acc}.unmerged_r2.fastq.gz",
+        subprocess.run ([
+            fetch_bundle.bbmerge_path,
+            "qtrim=t",
+            f"in1={fetch_bundle.sra_acc}_1.fastq in2={fetch_bundle.sra_acc}_2.fastq",
+            f"out={fetch_bundle.sra_acc}.merge.fastq.gz",
+            f"outu1={fetch_bundle.sra_acc}.unmerged_r1.fastq.gz",
+            f"outu2={fetch_bundle.sra_acc}.unmerged_r2.fastq.gz",
+        ], check=True,
         )
 
         # do away with the original FASTQs
-        os.system(f"rm -f {fetch_bundle.sra_acc}_1.fastq")
-        os.system(f"rm -f {fetch_bundle.sra_acc}_2.fastq")
+        # Uses path library to handle relative path handling
+        Path(f"{fetch_bundle.sra_acc}_1.fastq").unlink(missing_ok=True)
+        Path(f"{fetch_bundle.sra_acc}_2.fastq").unlink(missing_ok=True)
 
         # Combine merged and unmerged reads into a single FASTQ
-        os.system(
-            f"cat {fetch_bundle.sra_acc}.merge.fastq.gz \
-            {fetch_bundle.sra_acc}.unmerged_r1.fastq.gz \
-            {fetch_bundle.sra_acc}.unmerged_r2.fastq.gz \
-            > {fetch_bundle.sra_acc}.all.fastq.gz",
+        subprocess.run(["cat",  # noqa: S603, S607 cat process being called with relative path name
+                        f"{fetch_bundle.sra_acc}.merge.fastq.gz",
+                        f"{fetch_bundle.sra_acc}.unmerged_r1.fastq.gz",
+                        f"{fetch_bundle.sra_acc}.unmerged_r2.fastq.gz",
+                        ">",
+                        f"{fetch_bundle.sra_acc}.all.fastq.gz",
+        ], check=True,
         )
 
         # clean up clean up everybody everywhere
-        os.system(f"rm -f {fetch_bundle.sra_acc}.merge.fastq.gz")
-        os.system(f"rm -f {fetch_bundle.sra_acc}.unmerged_r1.fastq.gz")
-        os.system(f"rm -f {fetch_bundle.sra_acc}.unmerged_r2.fastq.gz")
+        Path(f"{fetch_bundle.sra_acc}.merge.fastq.gz").unlink(missing_ok=True)
+        Path(f"{fetch_bundle.sra_acc}.unmerged_r1.fastq.gz").unlink(missing_ok=True)
+        Path(f"{fetch_bundle.sra_acc}.unmerged_r2.fastq.gz").unlink(missing_ok=True)
 
         # if a mysterious third FASTQ came along, add that in too
         if Path(f"{fetch_bundle.sra_acc}.fastq").is_file():
             logger.info(
                 "Combining all available reads from the three downloaded FASTQs.",
             )
-            os.system(
-                f"cat {fetch_bundle.sra_acc}.fastq | gzip -c - >> {fetch_bundle.sra_acc}.all.fastq.gz",  # noqa: E501
-            )
-            os.system("rm -f " + fetch_bundle.sra_acc + ".fastq")
+            subprocess.run(["cat",  # noqa: S603, S607
+                            f"{fetch_bundle.sra_acc}.fastq",
+                            "|",
+                            "gzip",
+                            "-c",
+                            ">>",
+                            f"{fetch_bundle.sra_acc}.all.fastq.gz",
+                            ], check=True,
+                            )
+            Path(f"{fetch_bundle.sra_acc}.fastq").unlink(missing_ok=True)
 
         # Dereplicate the reads
         logger.info("Dereplicating the reads")
@@ -115,7 +125,7 @@ def handle_available_fastqs(fetch_bundle: FetchBundle) -> None:
             f"{fetch_bundle.sra_acc}.all.fastq.gz",
             f"{output_fasta}",
         )
-        os.system(f"rm -f {fetch_bundle.sra_acc}.all.fastq.gz")
+        Path(f"{fetch_bundle.sra_acc}.all.fastq.gz").unlink(missing_ok=True)
 
     elif (
         Path(f"{fetch_bundle.sra_acc}.fastq").is_file()
@@ -123,12 +133,12 @@ def handle_available_fastqs(fetch_bundle: FetchBundle) -> None:
     ):
         logger.info(f"Processing {fetch_bundle.sra_acc} as singleton reads.")
         dereplicate(f"{fetch_bundle.sra_acc}.fastq", f"{output_fasta}")
-        os.system("rm -f " + fetch_bundle.sra_acc + ".fastq")
+        Path(f"{fetch_bundle.sra_acc}.fastq").unlink(missing_ok=True)
 
     elif Path(f"{fetch_bundle.sra_acc}_1.fastq").is_file():
         logger.info(f"Processing {fetch_bundle.sra_acc} as singleton reads.")
         dereplicate(f"{fetch_bundle.sra_acc}_1.fastq", f"{output_fasta}")
-        os.system("rm -f " + fetch_bundle.sra_acc + ".fastq")
+        Path(f"{fetch_bundle.sra_acc}.fastq").unlink(missing_ok=True)
     else:
         logger.warning(
             f"Unsupported FASTQ name downloaded for {fetch_bundle.sra_acc}. Skipping",
@@ -142,10 +152,17 @@ def align_derep_reads(input_fasta: str, fetch_bundle: FetchBundle) -> None:
     """
     # run final mapping to the reference in preparation for haplotype calling
     logger.info(f"Mapping uncompressed file for {fetch_bundle.sra_acc}.")
-    os.system(
-        f"minimap2 -a {fetch_bundle.ref} {input_fasta} --sam-hit-only --secondary=no -o {fetch_bundle.sra_acc}.wg.sam",  # noqa: E501
-    )
+    subprocess.run(["minimap",  # noqa: S603, S607
+                    "-a",
+                    f"{fetch_bundle.ref}",
+                    f"{input_fasta}",
+                    "--sam-hit-only",
+                    "--secondary=no",
+                    "-o"
+                    f"{fetch_bundle.sra_acc}.wg.sam",
+                    ], check=True,
+                    )
 
     # Remove the input FASTA
-    os.system(f"rm -f {input_fasta}")
+    Path(input_fasta).unlink(missing_ok=True)
     logger.info(f"Finished fetching and deplicating {fetch_bundle.sra_acc}.")
