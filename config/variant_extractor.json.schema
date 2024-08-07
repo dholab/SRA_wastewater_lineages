@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "asdflas": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            }
+        },
+        "nt_positions": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": [
+        "asdflas",
+        "nt_positions",
+        "aa_variants",
+        "multi_var",
+        "omis",
+        "nt_call_variants",
+        "nt_multi_variants",
+        "nt_variants",
+        "search_Omis",
+        "search_ref",
+        "omi_matches",
+        "nt_outfiles",
+        "nt_mult_outfiles",
+        "aa_outfiles",
+        "multivar_fhs",
+        "nt_call_dict",
+        "nt_SRAs",
+        "nt_sample_dict",
+        "nt_multi_sample_dict",
+        "ref_sample_dict",
+        "pos_sample_dict",
+        "ref_nt_dict"
+    ]
+}
