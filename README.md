@@ -1,3 +1,9 @@
+> [!NOTE]
+>
+> This repository contains a legacy version of a workflow for finding SARS-CoV-2 cryptic lineages in the Sequence Read Archive (SRA), originally developed by David A. Baker and Devon Gregory. It is no longer actively maintained, but is pinned here for reproducibility along with Suarez et al. 2025 (manuscript in prep).
+>
+> Please note that while this version is no longer maintained, a newer alternative is under active development at [dholab](https://github.com/dholab). Users looking to search SRA for cryptic lineages themselves should reach out to the O'Connor group for updates on when the project will be open-sourced.
+
 # Summary
 1. This workflow will query SRA for the latest samples, then align and determine variants phased to a unique reads.
 2. Unlike a typical VCF, this reports the unique reads in the sample.  If a sample has multiple variants on the same read, it will be treated a collection of "phased variants" rather than individual variants.
